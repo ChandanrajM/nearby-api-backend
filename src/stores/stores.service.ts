@@ -34,16 +34,15 @@ export class StoresService {
     const store = await this.prisma.store.create({
       data: {
         name:    dto.name,
-        lat:     dto.lat,
-        lng:     dto.lng,
-        address: dto.address ?? null,
+        latitude:  dto.lat,
+        longitude: dto.lng,
+        addressLine: dto.address ?? "todo-address",
         phone:   dto.phone   ?? null,
         ownerId: owner.id,
         geohash: "todo-geohash", // Schema requires geohash, we can mock or generate it later
         city: "todo-city",
         state: "todo-state",
         pincode: "todo-pincode",
-        addressLine: dto.address ?? "todo-address"
       },
       include: {
         owner:    { select: { id: true, name: true, email: true } },
@@ -127,8 +126,8 @@ export class StoresService {
       where: { id: storeId },
       data:  {
         ...(dto.name     !== undefined && { name:     dto.name }),
-        ...(dto.lat      !== undefined && { lat:      dto.lat }),
-        ...(dto.lng      !== undefined && { lng:      dto.lng }),
+        ...(dto.lat      !== undefined && { latitude: dto.lat }),
+        ...(dto.lng      !== undefined && { longitude:dto.lng }),
         ...(dto.address  !== undefined && { addressLine: dto.address }),
         ...(dto.phone    !== undefined && { phone:    dto.phone }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
@@ -183,8 +182,8 @@ export class StoresService {
     return {
       id:           store.id,
       name:         store.name,
-      lat:          store.lat,
-      lng:          store.lng,
+      lat:          store.latitude,
+      lng:          store.longitude,
       address:      store.addressLine || store.address,
       phone:        store.phone,
       isActive:     store.isActive,
