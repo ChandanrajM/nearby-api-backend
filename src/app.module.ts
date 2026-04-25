@@ -9,6 +9,7 @@ import { StoresModule }      from './stores/stores.module';
 import { ProductsModule }    from './products/products.module';
 import { CategoriesModule }  from './categories/categories.module';
 import { NearbyModule }      from './nearby/nearby.module';
+import { ThemesModule }      from './themes/themes.module';
 import { CacheModule }       from './cache/cache.module';
 import { AppController }     from './app.controller';
 import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
@@ -29,6 +30,7 @@ import redisConfig           from './config/redis.config';
     UploadModule,
     StoresModule,
     NearbyModule,
+    ThemesModule,
     ProductsModule,
     CategoriesModule,
   ],

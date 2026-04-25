@@ -91,6 +91,7 @@ model Store {
   latitude      Float
   longitude     Float
   geohash       String
+  location      Unsupported("geography(Point, 4326)")?
   addressLine   String
   city          String
   state         String
@@ -124,8 +125,9 @@ model Category {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  products      Product[]
-  stores        StoreCategory[]
+  products       Product[]
+  stores         StoreCategory[]
+  categoryThemes CategoryTheme[]
 
   @@map("categories")
 }
@@ -306,12 +308,36 @@ model Wishlist {
 }
 
 model Theme {
-  id          String    @id @default(cuid())
-  name        String    @unique
-  configJson  Json
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                  String          @id @default(cuid())
+  name                String          @unique
+  description         String?
+  tagline             String?                    // "For bakeries and sweet shops"
+  previewUrl          String?
+  previewGradientFrom String?                    // gradient start colour hex
+  previewGradientTo   String?                    // gradient end colour hex
+  configJson          Json
+  isActive            Boolean         @default(true)
+  sortOrder           Int             @default(0)
+  createdAt           DateTime        @default(now())
+
+  categoryThemes      CategoryTheme[]
 
   @@map("themes")
+}
+
+// ── CATEGORY-THEME MAPPING ─────────────────────────────────
+// Maps each category to a default theme
+// isDefault = true → auto-applied when category is selected
+// sortOrder  → order themes appear in "Change Theme" picker
+model CategoryTheme {
+  id         String   @id @default(cuid())
+  categoryId String
+  themeId    String
+  isDefault  Boolean  @default(false)  // only ONE default per category
+  sortOrder  Int      @default(0)
+  category   Category @relation(fields: [categoryId], references: [id])
+  theme      Theme    @relation(fields: [themeId], references: [id])
+
+  @@unique([categoryId, themeId])
+  @@map("category_themes")
 }
