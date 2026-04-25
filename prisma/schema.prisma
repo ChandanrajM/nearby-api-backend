@@ -150,6 +150,9 @@ model Product {
   name          String
   description   String?
   price         Float
+  imageUrl      String
+  imageKey      String
+  isAvailable   Boolean       @default(true)
   mrp           Float?
   unit          String        @default("piece")
   stockQuantity Int           @default(0)
