@@ -2,28 +2,28 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { PrismaService }  from '../prisma/prisma.service';
-import { CacheService }   from '../cache/cache.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { CacheService } from '../cache/cache.service';
 import { NearbyQueryDto } from './dto/nearby-query.dto';
-import * as ngeohash      from 'ngeohash';
+import * as ngeohash from 'ngeohash';
 
 interface NearbyProductRaw {
-  product_id:       string;
-  product_name:     string;
-  description:      string | null;
-  price:            number;
-  image_url:        string;
-  is_available:     boolean;
-  store_id:         string;
-  store_name:       string;
-  store_phone:      string | null;
-  store_address:    string | null;
-  store_lat:        number;
-  store_lng:        number;
-  category_id:      string;
-  category_name:    string;
-  distance_metres:  number;
-  created_at:       Date;
+  product_id: string;
+  product_name: string;
+  description: string | null;
+  price: number;
+  image_url: string;
+  is_available: boolean;
+  store_id: string;
+  store_name: string;
+  store_phone: string | null;
+  store_address: string | null;
+  store_lat: number;
+  store_lng: number;
+  category_id: string;
+  category_name: string;
+  distance_metres: number;
+  created_at: Date;
 }
 
 @Injectable()
@@ -32,21 +32,21 @@ export class NearbyService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly cache:  CacheService,
-  ) {}
+    private readonly cache: CacheService,
+  ) { }
 
   async getNearbyProducts(query: NearbyQueryDto) {
     const {
       lat, lng,
-      radius     = 5000,
+      radius = 5000,
       categoryId,
-      sortBy     = 'distance',
-      page       = 1,
-      limit      = 20,
+      sortBy = 'distance',
+      page = 1,
+      limit = 20,
     } = query;
 
-    const geoHash   = ngeohash.encode(lat, lng, 5);
-    const cacheKey  = this.buildCacheKey(
+    const geoHash = ngeohash.encode(lat, lng, 5);
+    const cacheKey = this.buildCacheKey(
       geoHash, radius, categoryId, sortBy, page, limit,
     );
 
@@ -62,7 +62,7 @@ export class NearbyService {
     const orderClause = this.buildOrderClause(sortBy);
 
     const categoryFilter = categoryId
-      ? `AND p.category_id = '${categoryId}'::uuid`
+      ? `AND p."categoryId" = '${categoryId}'`
       : '';
 
     const rawResults = await this.prisma.$queryRawUnsafe<NearbyProductRaw[]>(`
@@ -71,17 +71,17 @@ export class NearbyService {
         p.name          AS product_name,
         p.description   AS description,
         p.price         AS price,
-        p.image_url     AS image_url,
-        p.is_available  AS is_available,
+        p."imageUrl"    AS image_url,
+        p."isAvailable" AS is_available,
         s.id            AS store_id,
         s.name          AS store_name,
         s.phone         AS store_phone,
-        s.address       AS store_address,
+        s."addressLine" AS store_address,
         s.latitude      AS store_lat,
         s.longitude     AS store_lng,
         c.id            AS category_id,
         c.name          AS category_name,
-        p.created_at    AS created_at,
+        p."createdAt"   AS created_at,
 
         ROUND(
           ST_Distance(
@@ -91,8 +91,8 @@ export class NearbyService {
         )               AS distance_metres
 
       FROM products p
-      INNER JOIN stores    s ON p.store_id    = s.id
-      INNER JOIN categories c ON p.category_id = c.id
+      INNER JOIN stores    s ON p."storeId"    = s.id
+      INNER JOIN categories c ON p."categoryId" = c.id
 
       WHERE
         ST_DWithin(
@@ -100,8 +100,8 @@ export class NearbyService {
           ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography,
           $3
         )
-        AND s.is_active   = true
-        AND p.is_available = true
+        AND s."isActive"   = true
+        AND p."isAvailable" = true
         ${categoryFilter}
 
       ${orderClause}
@@ -119,21 +119,21 @@ export class NearbyService {
     const countResult = await this.prisma.$queryRawUnsafe<[{ total: bigint }]>(`
       SELECT COUNT(*) AS total
       FROM products p
-      INNER JOIN stores s ON p.store_id = s.id
+      INNER JOIN stores s ON p."storeId" = s.id
       WHERE
         ST_DWithin(
           s.location::geography,
           ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography,
           $3
         )
-        AND s.is_active    = true
-        AND p.is_available = true
+        AND s."isActive"    = true
+        AND p."isAvailable" = true
         ${categoryFilter}
     `,
       lat, lng, radius,
     );
 
-    const total      = Number(countResult[0]?.total ?? 0);
+    const total = Number(countResult[0]?.total ?? 0);
     const totalPages = Math.ceil(total / limit);
 
     const products = rawResults.map(row => this.formatProduct(row));
@@ -152,8 +152,8 @@ export class NearbyService {
         lat,
         lng,
         radiusMetres: radius,
-        radiusKm:     (radius / 1000).toFixed(1),
-        categoryId:   categoryId ?? null,
+        radiusKm: (radius / 1000).toFixed(1),
+        categoryId: categoryId ?? null,
         sortBy,
       },
       fromCache: false,
@@ -173,7 +173,7 @@ export class NearbyService {
     const geoHash = ngeohash.encode(storeLat, storeLng, 5);
 
     const neighbours = ngeohash.neighbors(geoHash);
-    const allCells   = [geoHash, ...Object.values(neighbours)];
+    const allCells = [geoHash, ...Object.values(neighbours)];
 
     for (const cell of allCells) {
       await this.cache.deleteByPattern(`nearby:${cell}:*`);
@@ -187,19 +187,19 @@ export class NearbyService {
   async healthCheck() {
     const redisAlive = await this.cache.ping();
     return {
-      status:    'ok',
-      redis:     redisAlive ? 'connected' : 'unavailable',
+      status: 'ok',
+      redis: redisAlive ? 'connected' : 'unavailable',
       timestamp: new Date().toISOString(),
     };
   }
 
   private buildCacheKey(
-    geoHash:    string,
-    radius:     number,
+    geoHash: string,
+    radius: number,
     categoryId: string | undefined,
-    sortBy:     string,
-    page:       number,
-    limit:      number,
+    sortBy: string,
+    page: number,
+    limit: number,
   ): string {
     const cat = categoryId ?? 'all';
     return `nearby:${geoHash}:${radius}:${cat}:${sortBy}:${page}:${limit}`;
@@ -213,34 +213,34 @@ export class NearbyService {
         return 'ORDER BY p.price DESC,  distance_metres ASC';
       case 'distance':
       default:
-        return 'ORDER BY distance_metres ASC, p.created_at DESC';
+        return 'ORDER BY distance_metres ASC, p."createdAt" DESC';
     }
   }
 
   private formatProduct(row: NearbyProductRaw) {
     return {
-      id:          row.product_id,
-      name:        row.product_name,
+      id: row.product_id,
+      name: row.product_name,
       description: row.description,
-      price:       Number(row.price),
-      imageUrl:    row.image_url,
+      price: Number(row.price),
+      imageUrl: row.image_url,
       isAvailable: row.is_available,
       store: {
-        id:      row.store_id,
-        name:    row.store_name,
-        phone:   row.store_phone,
+        id: row.store_id,
+        name: row.store_name,
+        phone: row.store_phone,
         address: row.store_address,
-        lat:     Number(row.store_lat),
-        lng:     Number(row.store_lng),
+        lat: Number(row.store_lat),
+        lng: Number(row.store_lng),
       },
       category: {
-        id:   row.category_id,
+        id: row.category_id,
         name: row.category_name,
       },
       distance: {
-        metres:     Number(row.distance_metres),
+        metres: Number(row.distance_metres),
         kilometres: (Number(row.distance_metres) / 1000).toFixed(2),
-        display:    this.formatDistance(Number(row.distance_metres)),
+        display: this.formatDistance(Number(row.distance_metres)),
       },
       createdAt: row.created_at,
     };

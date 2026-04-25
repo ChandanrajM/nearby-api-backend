@@ -1,7 +1,7 @@
 import {
   IsNumber,
   IsOptional,
-  IsUUID,
+  IsString,
   IsIn,
   IsInt,
   Min,
@@ -30,7 +30,7 @@ export class NearbyQueryDto {
   radius?: number = 5000;
 
   @IsOptional()
-  @IsUUID('4', { message: 'categoryId must be a valid UUID' })
+  @IsString({ message: 'categoryId must be a valid string' })
   categoryId?: string;
 
   @IsOptional()

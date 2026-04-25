@@ -28,9 +28,9 @@ import redisConfig           from './config/redis.config';
     AuthModule,
     UploadModule,
     StoresModule,
+    NearbyModule,
     ProductsModule,
     CategoriesModule,
-    NearbyModule,
   ],
   controllers: [AppController],
   providers: [

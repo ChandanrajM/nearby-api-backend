@@ -12,11 +12,13 @@ import { Public }         from '../common/decorators/public.decorator';
 export class NearbyController {
   constructor(private readonly nearby: NearbyService) {}
 
+  @Public()
   @Get()
   getNearby(@Query() query: NearbyQueryDto) {
     return this.nearby.getNearbyProducts(query);
   }
 
+  @Public()
   @Get('health')
   health() {
     return this.nearby.healthCheck();
