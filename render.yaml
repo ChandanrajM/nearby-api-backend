@@ -3,7 +3,7 @@ services:
     name: nearby-api
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build && npx prisma generate
+    buildCommand: npm install && npx prisma generate && npm run build
     startCommand: node dist/main.js
     envVars:
       - key: NODE_ENV
