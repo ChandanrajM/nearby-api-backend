@@ -7,61 +7,99 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+const CATEGORIES = [
+  { name: 'Shoes',       slug: 'shoes',       iconUrl: null },
+  { name: 'Food',        slug: 'food',        iconUrl: null },
+  { name: 'Electronics', slug: 'electronics', iconUrl: null },
+  { name: 'Clothing',    slug: 'clothing',    iconUrl: null },
+  { name: 'Books',       slug: 'books',       iconUrl: null },
+  { name: 'Furniture',   slug: 'furniture',   iconUrl: null },
+  { name: 'Beauty',      slug: 'beauty',      iconUrl: null },
+  { name: 'Sports',      slug: 'sports',      iconUrl: null },
+];
+
+const THEMES = [
+  {
+    name:        'Grid',
+    configJson:  {
+      layout:      'grid',
+      cols:        2,
+      imageRatio:  '1:1',
+      cardStyle:   'rounded',
+    },
+  },
+  {
+    name:        'Reels',
+    configJson:  {
+      layout:      'reels',
+      imageRatio:  '9:16',
+      showOverlay: true,
+    },
+  },
+  {
+    name:        'Minimal',
+    configJson:  {
+      layout:        'minimal',
+      imageRatio:    '1:1',
+      thumbnailSize: 'small',
+    },
+  },
+  {
+    name:        'Cards',
+    configJson:  {
+      layout:     'cards',
+      imageRatio: '4:3',
+      showBadge:  true,
+    },
+  },
+];
+
 async function main() {
-  // ── Categories ──────────────────────────────────────────
-  const categories = [
-    { name: 'Shoes', slug: 'shoes' },
-    { name: 'Food', slug: 'food' },
-    { name: 'Electronics', slug: 'electronics' },
-    { name: 'Clothing', slug: 'clothing' },
-    { name: 'Books', slug: 'books' },
-    { name: 'Furniture', slug: 'furniture' },
-    { name: 'Beauty', slug: 'beauty' },
-    { name: 'Sports', slug: 'sports' },
-  ];
+  console.log('🌱 Starting database seed...\\n');
 
-  for (const category of categories) {
-    await prisma.category.upsert({
-      where: { name: category.name },
-      update: {},
-      create: category,
+  console.log('📦 Seeding categories...');
+  for (const cat of CATEGORIES) {
+    const result = await prisma.category.upsert({
+      where:  { name: cat.name },
+      update: { iconUrl: cat.iconUrl, slug: cat.slug },
+      create: {
+        name:    cat.name,
+        slug:    cat.slug,
+        iconUrl: cat.iconUrl,
+      },
     });
+    console.log(`   ✅ ${result.name} (${result.id})`);
   }
 
-  // ── Themes ──────────────────────────────────────────────
-  const themes = [
-    {
-      name: 'Grid',
-      configJson: { layout: 'grid', cols: 2, imageRatio: '1:1', cardStyle: 'rounded' },
-    },
-    {
-      name: 'Reels',
-      configJson: { layout: 'reels', imageRatio: '9:16', showOverlay: true },
-    },
-    {
-      name: 'Minimal',
-      configJson: { layout: 'minimal', imageRatio: '1:1', thumbnailSize: 'small' },
-    },
-    {
-      name: 'Cards',
-      configJson: { layout: 'cards', imageRatio: '4:3', showBadge: true },
-    },
-  ];
-
-  for (const theme of themes) {
-    await prisma.theme.upsert({
-      where: { name: theme.name },
-      update: {},
-      create: theme,
+  console.log('\\n🎨 Seeding themes...');
+  for (const theme of THEMES) {
+    const result = await prisma.theme.upsert({
+      where:  { name: theme.name },
+      update: {
+        configJson:  theme.configJson,
+      },
+      create: {
+        name:        theme.name,
+        configJson:  theme.configJson,
+        isActive:    true,
+      },
     });
+    console.log(`   ✅ ${result.name} — layout: ${(result.configJson as any).layout}`);
   }
-  
-  console.log('✅ Categories and Themes seeded successfully!');
+
+  const categoryCount = await prisma.category.count();
+  const themeCount    = await prisma.theme.count();
+
+  console.log('\n─────────────────────────────────────');
+  console.log(`✅ Seed complete`);
+  console.log(`   Categories : ${categoryCount}`);
+  console.log(`   Themes     : ${themeCount}`);
+  console.log('─────────────────────────────────────\n');
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
+  .catch((err) => {
+    console.error('❌ Seed failed:', err);
     process.exit(1);
   })
   .finally(async () => {

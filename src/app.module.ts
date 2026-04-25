@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { UploadModule } from './upload/upload.module';
 import { StoresModule } from './stores/stores.module';
 import { ProductsModule } from './products/products.module';
+import { CategoriesModule } from './categories/categories.module';
 import { AppController } from './app.controller';
 import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
 import firebaseConfig from './config/firebase.config';
@@ -24,6 +25,7 @@ import r2Config from './config/r2.config';
     UploadModule,
     StoresModule,
     ProductsModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [
