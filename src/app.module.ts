@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UploadModule } from './upload/upload.module';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
 import firebaseConfig from './config/firebase.config';
 import r2Config from './config/r2.config';
 
@@ -21,6 +22,11 @@ import r2Config from './config/r2.config';
     UploadModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: FirebaseAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

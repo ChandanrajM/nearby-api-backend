@@ -1,35 +1,40 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
-import { CurrentUser } from './common/decorators/current-user.decorator';
+import {
+  Controller, Get,
+  ForbiddenException,
+} from '@nestjs/common';
+import { Public }       from './common/decorators/public.decorator';
+import { Roles }        from './common/decorators/roles.decorator';
+import { CurrentUser }  from './common/decorators/current-user.decorator';
+import { Role }         from '@prisma/client';
+import { User }         from '@prisma/client';
 
 @Controller()
 export class AppController {
-  @Get()
-  getHello() {
-    return {
-      message: 'Welcome to Nearby API 🚀',
-      version: '1.0.0',
-      docs: '/api/v1/health',
-    };
-  }
 
-  // ── Public route — no auth needed ─────────────────────────
+  @Public()
   @Get('health')
   health() {
     return {
-      status: 'ok',
-      app: 'Nearby API',
+      status:    'ok',
+      app:       'Nearby API',
+      version:   '1.0.0',
       timestamp: new Date().toISOString(),
     };
   }
 
-  // ── Protected route — requires valid Firebase token ────────
-  @UseGuards(FirebaseAuthGuard)
   @Get('me')
-  getMe(@CurrentUser() user: any) {
+  getMe(@CurrentUser() user: User) {
     return {
-      message: 'Token is valid ✅',
+      message: 'Authenticated ✅',
       user,
+    };
+  }
+
+  @Roles(Role.SELLER)
+  @Get('owner-only')
+  ownerOnly(@CurrentUser() user: User) {
+    return {
+      message: `Welcome store owner: ${user.name}`,
     };
   }
 }
