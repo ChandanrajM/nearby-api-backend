@@ -5,27 +5,32 @@ import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UploadModule } from './upload/upload.module';
-import { StoresModule } from './stores/stores.module';
-import { ProductsModule } from './products/products.module';
-import { CategoriesModule } from './categories/categories.module';
-import { AppController } from './app.controller';
+import { StoresModule }      from './stores/stores.module';
+import { ProductsModule }    from './products/products.module';
+import { CategoriesModule }  from './categories/categories.module';
+import { NearbyModule }      from './nearby/nearby.module';
+import { CacheModule }       from './cache/cache.module';
+import { AppController }     from './app.controller';
 import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
-import firebaseConfig from './config/firebase.config';
-import r2Config from './config/r2.config';
+import firebaseConfig        from './config/firebase.config';
+import r2Config              from './config/r2.config';
+import redisConfig           from './config/redis.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [firebaseConfig, r2Config],
+      load: [firebaseConfig, r2Config, redisConfig],
     }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     PrismaModule,
+    CacheModule,
     AuthModule,
     UploadModule,
     StoresModule,
     ProductsModule,
     CategoriesModule,
+    NearbyModule,
   ],
   controllers: [AppController],
   providers: [

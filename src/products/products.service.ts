@@ -9,6 +9,7 @@ import { PrismaService }    from '../prisma/prisma.service';
 import { R2Service }        from '../upload/r2.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { NearbyService }    from '../nearby/nearby.service';
 import { User }             from '@prisma/client';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly r2:     R2Service,
+    private readonly nearby: NearbyService,
   ) {}
 
   async create(dto: CreateProductDto, user: User) {
@@ -68,6 +70,7 @@ export class ProductsService {
     });
 
     this.logger.log(`Product created: ${product.id} in store: ${store.id}`);
+    await this.nearby.invalidateAreaCache(store.latitude, store.longitude);
     return this.formatProduct(product);
   }
 
@@ -187,6 +190,7 @@ export class ProductsService {
     }
 
     this.logger.log(`Product updated: ${productId} by user: ${user.id}`);
+    await this.nearby.invalidateAreaCache(product.store.latitude, product.store.longitude);
     return this.formatProduct(updated);
   }
 
@@ -216,6 +220,7 @@ export class ProductsService {
     }
 
     this.logger.log(`Product deleted: ${productId} by user: ${user.id}`);
+    await this.nearby.invalidateAreaCache(product.store.latitude, product.store.longitude);
 
     return {
       message:   'Product deleted successfully',
@@ -247,6 +252,7 @@ export class ProductsService {
     });
 
     this.logger.log(`Product ${productId} availability toggled to: ${updated.isAvailable}`);
+    await this.nearby.invalidateAreaCache(product.store.latitude, product.store.longitude);
     return this.formatProduct(updated);
   }
 
