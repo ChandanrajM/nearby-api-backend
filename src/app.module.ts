@@ -11,6 +11,9 @@ import { CategoriesModule }  from './categories/categories.module';
 import { NearbyModule }      from './nearby/nearby.module';
 import { ThemesModule }      from './themes/themes.module';
 import { CacheModule }       from './cache/cache.module';
+import { CartModule }        from './cart/cart.module';
+import { AddressesModule }   from './addresses/addresses.module';
+import { OrdersModule }      from './orders/orders.module';
 import { AppController }     from './app.controller';
 import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
 import firebaseConfig        from './config/firebase.config';
@@ -33,6 +36,9 @@ import redisConfig           from './config/redis.config';
     ThemesModule,
     ProductsModule,
     CategoriesModule,
+    CartModule,
+    AddressesModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [
