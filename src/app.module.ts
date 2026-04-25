@@ -5,6 +5,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UploadModule } from './upload/upload.module';
+import { StoresModule } from './stores/stores.module';
 import { AppController } from './app.controller';
 import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
 import firebaseConfig from './config/firebase.config';
@@ -20,6 +21,7 @@ import r2Config from './config/r2.config';
     PrismaModule,
     AuthModule,
     UploadModule,
+    StoresModule,
   ],
   controllers: [AppController],
   providers: [
