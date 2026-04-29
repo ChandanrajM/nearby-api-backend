@@ -2,7 +2,7 @@ import { Controller, Get, Post, Patch, Delete, Body, Param, Req, UseGuards, Pars
 import { CartService } from './cart.service';
 import { FirebaseAuthGuard } from '../common/guards/firebase-auth.guard';
 
-@Controller('api/v1/cart')
+@Controller('cart')
 @UseGuards(FirebaseAuthGuard)
 export class CartController {
   constructor(private readonly cartService: CartService) {}
